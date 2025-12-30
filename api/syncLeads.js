@@ -80,11 +80,27 @@ export default async function handler(req, res) {
       }
     }
 
-    return res.status(200).json({ success: true, processed, total: leads.length });
+      // update telemetry
+    globalThis.telemetry = {
+      lastSync: new Date().toISOString(),
+      lastSuccessCount: processed,
+      lastTotal: leads.length,
+      lastError: null
+    };
+
+    };
+return res.status(200).json({ success: true, processed, total: leads.length });
   } catch (err) {
     // Catch network or parsing errors. Provide a generic message to avoid
     // leaking API details to the response.
     console.error('Error during sync:', err.response?.data || err.message);
-    return res.status(500).json({ success: false, error: 'Failed to sync leads' });
+        // update telemetry on error
+    globalThis.telemetry = {
+      lastSync: new Date().toISOString(),
+      lastSuccessCount: 0,
+      lastTotal: 0,
+      lastError: err.message || 'Failed to sync'
+    };
+return res.status(500).json({ success: false, error: 'Failed to sync leads' });
   }
 }
