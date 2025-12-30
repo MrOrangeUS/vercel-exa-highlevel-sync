@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Status Dashboard</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 40px; padding: 0; background-color: #f5f5f5; color: #333; }
+    h1 { color: #0070f3; }
+    #status-container p { margin: 4px 0; }
+    #refresh-btn { margin-top: 20px; padding: 8px 16px; font-size: 16px; }
+  </style>
+</head>
+<body>
+  <h1>Service Status Dashboard</h1>
+  <div id="status-container">
+    <p id="status">Loading...</p>
+    <p id="timestamp"></p>
+    <p id="uptime"></p>
+  </div>
+  <button id="refresh-btn">Refresh</button>
+  <script>
+    async function fetchStatus() {
+      try {
+        const response = await fetch('/api/status');
+        if (!response.ok) {
+          throw new Error('Failed to fetch status');
+        }
+        const data = await response.json();
+        document.getElementById('status').textContent = 'Status: ' + data.status;
+        document.getElementById('timestamp').textContent = 'Timestamp: ' + data.timestamp;
+        if (data.uptime !== undefined) {
+          const seconds = Math.floor(data.uptime);
+          const hrs = Math.floor(seconds / 3600);
+          const mins = Math.floor((seconds % 3600) / 60);
+          const secs = seconds % 60;
+          document.getElementById('uptime').textContent = 'Uptime: ' + hrs + 'h ' + mins + 'm ' + secs + 's';
+        } else {
+          document.getElementById('uptime').textContent = '';
+        }
+      } catch (err) {
+        document.getElementById('status').textContent = 'Error fetching status';
+        document.getElementById('timestamp').textContent = '';
+        document.getElementById('uptime').textContent = '';
+      }
+    }
+    document.getElementById('refresh-btn').addEventListener('click', fetchStatus);
+    fetchStatus();
+    setInterval(fetchStatus, 60000);
+  </script>
+</body>
+</html>
