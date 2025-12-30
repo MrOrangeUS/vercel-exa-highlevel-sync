@@ -1,12 +1,12 @@
-module.exports = (req, res) => {
+export default function handler(req, res) {
   res.setHeader('Content-Type', 'application/json');
-  const uptime = process.uptime ? process.uptime() : null;
+  const uptime = typeof process.uptime === 'function' ? process.uptime() : null;
   const response = {
     status: 'OK',
-    currentTime: new Date().toISOString(),
+    timestamp: new Date().toISOString(),
   };
   if (uptime !== null) {
-    response.uptimeSeconds = uptime;
+    response.uptime = uptime;
   }
-  res.status(200).end(JSON.stringify(response));
-};
+  res.status(200).json(response);
+}
