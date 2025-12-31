@@ -9,6 +9,7 @@
     h1 { color: #0070f3; }
     #status-container p { margin: 4px 0; }
     #refresh-btn { margin-top: 20px; padding: 8px 16px; font-size: 16px; }
+    #fetch-btn { margin-top: 20px; padding: 8px 16px; font-size: 16px; margin-left: 10px; }
     #last-error { color: red; }
   </style>
 </head>
@@ -24,13 +25,12 @@
     <p id="last-error"></p>
   </div>
   <button id="refresh-btn">Refresh</button>
+  <button id="fetch-btn">Fetch Leads</button>
   <script>
   async function fetchStatus() {
     try {
       const response = await fetch('/api/status');
-      if (!response.ok) {
-        throw new Error('Failed to fetch status');
-      }
+      if (!response.ok) throw new Error('Failed to fetch status');
       const data = await response.json();
       document.getElementById('status').textContent = 'Status: ' + data.status;
       document.getElementById('timestamp').textContent = 'Timestamp: ' + data.timestamp;
@@ -68,7 +68,25 @@
       document.getElementById('last-error').textContent = err.message;
     }
   }
+
   document.getElementById('refresh-btn').addEventListener('click', fetchStatus);
+
+  document.getElementById('fetch-btn').addEventListener('click', async () => {
+    const fetchBtn = document.getElementById('fetch-btn');
+    fetchBtn.disabled = true;
+    fetchBtn.textContent = 'Fetching...';
+    try {
+      const resp = await fetch('/api/manualSync');
+      if (!resp.ok) throw new Error('Failed to sync leads');
+      await fetchStatus();
+    } catch (err) {
+      document.getElementById('last-error').textContent = 'Manual Sync Error: ' + err.message;
+    } finally {
+      fetchBtn.disabled = false;
+      fetchBtn.textContent = 'Fetch Leads';
+    }
+  });
+
   fetchStatus();
   setInterval(fetchStatus, 60000);
   </script>
